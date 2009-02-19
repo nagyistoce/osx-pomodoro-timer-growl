@@ -1,0 +1,42 @@
+#!/bin/sh
+
+ ##  script POMODORO per OSX!                                                    ##
+ #                                                                                #
+ #   richiede la presenza del comando GNU gdate per la formattazione delle date   #
+ #   si può installare con macports, è nel pacchetto coreutils                    #
+ #   inoltre richiede Growl per le notifiche                                      #
+ #                                                                                #
+ #   i tempi sono codificati come segue:                                          #
+ #     @ pausa lunga: 15 minuti                                                   #
+ #     @ pausa corta:  5 minuti                                                   #
+ #     @ pomodoro   : 25 minuti, ovviamente ;)                                    #
+ #                                                                                #
+ #   by Andrea Schiavini                                                          #
+ ##                                                                              ##
+
+ #  la funzione pausa richiede un argomento: una stringa tra "corta" e "lunga"
+
+function pausa {
+	durata_pausa=300
+	if [ $1 = "lunga" ]; then
+		durata_pausa=900
+	fi
+	growlnotify \
+	-s -w -m "E' finito il pomodoro, pausa "$1 -t "Pomodoro" --image pomo.tif \
+	&& counter=$(($counter+1))
+	echo $(gdate +%Y/%m/%d\ -\ %H:%M)" - pomodoro finito, pausa "$1 >> log.txt 
+	sleep $durata_pausa && growlnotify -s -w -m          \
+	"Torna a lavorare!" -t "Pomodoro" --image pomo.tif	
+}
+
+counter=1;
+growlnotify -s -w -m "Buon lavoro!" -t "Pomodoro" --image pomo.tif
+while true; do 
+	echo $(gdate +%Y/%m/%d\ -\ %H:%M)" - pomodoro iniziato" >> log.txt
+	sleep 1500 && 
+	if [ $(($counter%5)) -eq 0 ]; then		
+		pausa lunga
+	else
+		pausa corta	
+	fi 
+done
